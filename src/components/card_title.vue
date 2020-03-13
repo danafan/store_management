@@ -4,7 +4,7 @@
 			<div class="line"></div>
 			<div class="text">{{title}}</div>
 		</div>
-		<div class="right" @click="callback">
+		<div class="right" @click="callback" v-if="shouBut">
 			<img src="../assets/create.png">
 			<div>创建</div>
 		</div>
@@ -56,6 +56,10 @@
 			title:{
 				type:String,
 				default:""
+			},
+			shouBut:{
+				type:Boolean,
+				default:true
 			}
 		},
 		methods:{

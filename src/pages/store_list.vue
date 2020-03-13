@@ -4,7 +4,7 @@
 			<CardTitle title="店铺列表" @callback="showDialog = true"></CardTitle>
 			<el-form :inline="true" size="small" class="demo-form-inline">
 				<el-form-item label="店铺名称：">
-					<el-select v-model="req.store_name" placeholder="请选择" clearable>
+					<el-select v-model="req.id" placeholder="请选择" clearable>
 						<el-option v-for="item in storeList" :key="item.store_id" :label="item.store_name" :value="item.store_id">
 						</el-option>
 					</el-select>
@@ -72,8 +72,8 @@
 				req:{
 					page:1,
 					pagesize:10,
-					store_name:"",
-					store_id:'',
+					id:"",
+					store_id:"",
 					account:"",
 				},
 				dataObj:{},					//获取到的信息
@@ -104,7 +104,7 @@
 				}else{
 					resource.createStore(this.createReq).then(res => {
 						if(res.data.code == 1){
-							this.$message.warning('店铺创建成功');
+							this.$message.success('店铺创建成功');
 							this.showDialog = false;
 							//获取列表
 							this.getList();

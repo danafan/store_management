@@ -21,6 +21,8 @@
       this.$store.dispatch('getMenu');
       //获取店铺列表
       this.$store.dispatch('getStoreListAjax');
+      //获取部门列表
+      this.$store.dispatch('getDepartmentListAjax');
     },
     methods: {
       reload () {

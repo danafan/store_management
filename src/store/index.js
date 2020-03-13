@@ -16,7 +16,9 @@ const store = new Vuex.Store({
     userInfo:{},
     menuList:[],
     //店铺列表
-    storeList:[]
+    storeList:[],
+    //部门列表
+    departmentList:[]
   },
   mutations: {
     // 导航及权限
@@ -31,6 +33,10 @@ const store = new Vuex.Store({
     //获取店铺列表
     GET_STORE_LIST_AJAX(state,data){
       state.storeList = data;
+    },
+     //获取部门列表
+    GET_DEPARTMENT_LIST_AJAX(state,data){
+      state.departmentList = data;
     }
   },
   actions: {
@@ -54,6 +60,16 @@ const store = new Vuex.Store({
       resource.getStoreListAjax().then(res => {
        if(res.data.code == 1){
          context.commit('GET_STORE_LIST_AJAX', res.data.data);
+       }else{
+         Message.warning(res.data.msg);
+       }
+     })
+    },
+    //获取部门列表
+    getDepartmentListAjax(context){
+      resource.getDepartmentList().then(res => {
+       if(res.data.code == 1){
+         context.commit('GET_DEPARTMENT_LIST_AJAX', res.data.data);
        }else{
          Message.warning(res.data.msg);
        }
