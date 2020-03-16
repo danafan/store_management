@@ -5,6 +5,7 @@
 </template>
 
 <script>
+  import dd from './api/dd.js'
   export default {
     provide () {
       return {
@@ -17,12 +18,8 @@
       }
     },
     created(){
-      //获取首页信息
-      this.$store.dispatch('getMenu');
-      //获取店铺列表
-      this.$store.dispatch('getStoreListAjax');
-      //获取部门列表
-      this.$store.dispatch('getDepartmentListAjax');
+      //获取用户信息
+      dd.getUserInfo();
     },
     methods: {
       reload () {

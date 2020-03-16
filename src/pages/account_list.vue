@@ -39,7 +39,7 @@
 					<el-button type="primary" round @click="search">搜索</el-button>
 				</el-form-item>
 				<el-form-item>
-					<el-button type="primary" round @click="exportUp">导出</el-button>
+					<el-button type="primary" round @click="exportUp" v-if="showExport">导出</el-button>
 				</el-form-item>
 			</el-form>
 			<el-table :data="dataObj.data" size="small" border style="width: 100%" align="center" :header-cell-style="{'background':'#f4f4f4'}">
@@ -59,8 +59,8 @@
 				</el-table-column>
 				<el-table-column label="操作" align="center">
 					<template slot-scope="scope">
-						<el-button type="text" size="small" @click="specified(scope.row.account_id)">指定员工</el-button>
-						<el-button type="text" size="small" @click="editor(scope.row.account_id)">修改</el-button>
+						<el-button type="text" size="small" @click="clickSpecified(scope.row.account_id)">指定员工</el-button>
+						<el-button type="text" size="small" @click="editor(scope.row.account_id)" v-if="showEdit">修改</el-button>
 						<el-button type="text" size="small" v-if="scope.row.status == 1" @click="setting(scope.row.account_id,0)">停用</el-button>
 						<el-button type="text" size="small" v-if="scope.row.status == 0" @click="setting(scope.row.account_id,1)">启用</el-button>
 					</template>
@@ -117,6 +117,7 @@
 <script type="text/javascript">
 	import resource from '../api/resource.js'
 	import CardTitle from '../components/card_title.vue'
+	import * as dd from 'dingtalk-jsapi';
 	export default{
 		data(){
 			return{
@@ -152,6 +153,16 @@
 			//部门列表列表(查询条件)
 			departmentList() {
 				return this.$store.state.departmentList;
+			},
+			//判断是否显示导出按钮
+			showExport() {
+				let str = this.$store.state.userInfo.roles;
+				return str.indexOf("1") != -1;
+			},
+			//判断是否显示修改按钮
+			showEdit() {
+				let str = this.$store.state.userInfo.roles;
+				return str.indexOf("2") != -1;
 			}
 		},
 		created(){
@@ -160,8 +171,37 @@
 		},
 		methods:{
 			//点击指定员工
-			specified(id){
-				console.log(id);
+			clickSpecified(id){
+				dd.ready(() => {
+					dd.biz.contact.choose({
+    				multiple: false, //是否多选：true多选 false单选； 默认true
+    				users: [], //默认选中的用户列表，员工userid；成功回调中应包含该信息
+    				corpId: "ding7828fff434921f5b", //企业id
+    				max: 1500, //人数限制，当multiple为true才生效，可选范围1-1500
+    				onSuccess: res => {
+    					let req = {
+    						account_id:id,
+    						user_id:res[0].emplId,
+    						realname:res[0].name
+    					}
+    					//指定
+    					this.specified(req);	
+    				},
+    				onFail : err => {}
+    			});
+				});
+			},
+			//指定
+			specified(req){
+				resource.specified(req).then(res => {
+					if(res.data.code == 1){
+						this.$message.success("员工指定成功");
+						//获取列表
+						this.getList();
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				});
 			},
 			//启、停用
 			setting(id,type){
@@ -222,31 +262,63 @@
 				}else if(this.createReq.auth_mobile == ""){
 					this.$message.warning('请输入认证人手机号');
 				}else{
-					if(this.showDialogType == 0){	//创建
-						resource.createAccount(this.createReq).then(res => {
-							if(res.data.code == 1){
-								this.$message.success('账号创建成功');
-								this.showDialog = false;
-								//获取列表
-								this.getList();
+					resource.authStore({name:this.createReq.auth_username}).then(res => {
+						if(res.data.code == 1){
+							let reaData = res.data.data;
+							if(reaData.length == 0){
+								if(this.showDialogType == 0){		//创建
+									this.createFuc();	
+								}else{								//修改
+									this.editFuc();
+								}
 							}else{
-								this.$message.warning(res.data.msg);
-							}
-						});
-					}else{							//修改
-						resource.editAccount({...this.createReq,...{account_id:this.id}}).then(res => {
-							if(res.data.code == 1){
-								this.$message.success('账号修改成功');
 								this.showDialog = false;
-								//获取列表
-								this.getList();
-							}else{
-								this.$message.warning(res.data.msg);
+								let reaData = res.data.data;
+								let arr = [];
+								reaData.map(item => arr.push(`【${item.store_name}】`));
+								this.$confirm(`该认证人已认证店铺${arr.join(",")}，是否用该认证人认证此账号?`, '提示', {
+									confirmButtonText: '确定',
+									cancelButtonText: '取消',
+									type: 'warning'
+								}).then(() => {
+									if(this.showDialogType == 0){		//创建
+										this.createFuc();	
+									}else{								//修改
+										this.editFuc();
+									}
+								}).catch(() => {
+									this.showDialog = true;          
+								});
 							}
-						})
-					}
-					
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					});
 				};
+			},
+			createFuc(){
+				resource.createAccount(this.createReq).then(res => {
+					if(res.data.code == 1){
+						this.$message.success('账号创建成功');
+						this.showDialog = false;
+						//获取列表
+						this.getList();
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				});
+			},
+			editFuc(){
+				resource.editAccount({...this.createReq,...{account_id:this.id}}).then(res => {
+					if(res.data.code == 1){
+						this.$message.success('账号修改成功');
+						this.showDialog = false;
+						//获取列表
+						this.getList();
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				})
 			},
 			//分页
 			handleSizeChange(val) {
@@ -277,15 +349,17 @@
 			},
 			//预约下载
 			exportUp(){
-				// var arr = {};
-				// for(let a in this.req){
-				// 	if(a != 'page' && a != 'pagesize' && this.req[a] != ''){
-				// 		arr[a] = this.req[a];
-				// 	}
-				// }
-				// arr.index = 11;
-				// exportUp.exportUp(arr)
+				var exportStr = [];
+				for(let a in this.req){
+					if(a != 'page' && a != 'pagesize' && this.req[a] != ''){
+						var str = `${a}=${this.req[a]}`;
+						exportStr.push(str);
+					}
+				}
+				window.open(`${location.origin}/api/account/export?${exportStr.join('&')}`);
 			},
+
+
 		},
 		components:{
 			CardTitle

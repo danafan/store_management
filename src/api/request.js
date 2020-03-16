@@ -4,9 +4,14 @@ export default {
   post(path, params={}){
     // var target = {};
     
+    let user_id = sessionStorage.getItem("user_id");
     var target = {
-      user_id:"1"
+      user_id:user_id
     };
+
+    // var target = {
+    //   user_id:"8318"
+    // };
 
     Object.assign(params, target);
     let form = new FormData();
@@ -26,9 +31,15 @@ export default {
   get(path, params={}){
     // var target = {};
     
+    let user_id = sessionStorage.getItem("user_id");
     var target = {
-      user_id:"1"
+      user_id:user_id
     };
+    
+
+    // var target = {
+    //   user_id:"8318"
+    // };
     
     Object.assign(params, target);
     let arr = [];

@@ -4,6 +4,7 @@ import axios from "axios";
 import { Message } from 'element-ui';
 import resource from '../api/resource.js'
 import router from '../router/index.js'
+import dd from '../api/dd.js'
 
 
 Vue.use(Vuex)
@@ -35,11 +36,41 @@ const store = new Vuex.Store({
       state.storeList = data;
     },
      //获取部门列表
-    GET_DEPARTMENT_LIST_AJAX(state,data){
+     GET_DEPARTMENT_LIST_AJAX(state,data){
       state.departmentList = data;
     }
   },
   actions: {
+    //获取钉钉用户信息
+    getUserInfo({dispatch},data){
+      resource.getUserInfo({code:data.code}).then(res => {
+        if(res.data.code == 1){
+          let user_id = res.data.data.user_id;
+          sessionStorage.setItem("user_id",user_id);
+          // 获取导航及权限
+          dispatch('getMenu');
+          //获取店铺列表
+          dispatch('getStoreListAjax');
+          //获取部门列表
+          dispatch('getDepartmentListAjax');
+          //获取钉钉配置
+          dispatch('ddConfig');
+        }else{
+         Message.warning(res.data.msg);
+       }
+     });
+    },
+    //获取钉钉配置
+    ddConfig(context) {
+      resource.ddConfig().then(res => {
+       if(res.data.code == 1){
+         //配置钉钉config
+         dd.settingDd(res.data.data);
+       }else{
+         Message.warning(res.data.msg);
+       }
+     })
+    },
     // 获取导航及权限
     getMenu (context) {
       resource.getMenu().then(res => {

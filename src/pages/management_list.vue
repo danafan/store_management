@@ -9,7 +9,7 @@
 				</el-table-column>
 				<el-table-column label="操作" align="center">
 					<template slot-scope="scope">
-						<el-button type="text" size="small" @click="editor(scope.row.admin_id)">修改</el-button>
+						<el-button type="text" size="small" @click="editor(scope.row.admin_id)" v-if="showEdit">修改</el-button>
 						<el-button type="text" size="small" v-if="scope.row.status == 1" @click="setting(scope.row.admin_id,0)">停用</el-button>
 						<el-button type="text" size="small" v-if="scope.row.status == 0" @click="setting(scope.row.admin_id,1)">启用</el-button>
 					</template>
@@ -31,7 +31,7 @@
 	<el-dialog :title="showDialogType == 0 ? '创建' : '修改'" width="40%" :visible.sync="showDialog">
 		<div class="selectAdmin">
 			<span>将</span>
-			<div class="dingInput">德儿网络</div>
+			<div class="dingInput" @click="clickSpecified">{{createReq.staff_name}}</div>
 			<span>员工</span>
 		</div>
 		<div class="selectAdmin" v-for="(item,index) in store_department">
@@ -47,7 +47,7 @@
 			</el-select>
 			<span>部门管理员</span>
 			<img src="../assets/add.png" v-if="index == store_department.length - 1" @click="add(index)">
-			<img src="../assets/delete.png" v-if="store_department.length > 1 && index != store_department.length - 1" @click="deleteIs(index)">
+			<img src="../assets/delete.png" v-if="store_department.length > 1" @click="deleteIs(index)">
 		</div>
 		<div class="selectAdmin">
 			<span>具有权限：</span>
@@ -95,6 +95,7 @@
 <script type="text/javascript">
 	import resource from '../api/resource.js'
 	import CardTitle from '../components/card_title.vue'
+	import * as dd from 'dingtalk-jsapi';
 	export default{
 		data(){
 			return{
@@ -104,12 +105,13 @@
 				},
 				dataObj:{},					//获取到的信息
 				showDialogType:0,			//0:创建；1:修改
-				showDialog:true,
+				showDialog:false,
 				store_department:[{
 					store_id:"",
 					department_id:""
 				}],
-				roles:[],					//选中的权限
+				id:"",						//点击的管理员id
+				roles:['1','2'],			//选中的权限
 				createReq:{
 					staff_name:"",
 					staff_id:"",
@@ -130,6 +132,11 @@
 			//部门列表列表(查询条件)
 			departmentList() {
 				return this.$store.state.departmentList;
+			},
+			//判断是否显示修改按钮
+			showEdit() {
+				let str = this.$store.state.userInfo.roles;
+				return str.indexOf("2") != -1;
 			}
 		},
 		methods:{
@@ -154,7 +161,7 @@
 					}
 				})
 			},
-			//点击创建
+			//创建
 			create(){
 				this.showDialogType = 0;
 				this.showDialog = true;
@@ -162,13 +169,53 @@
 					store_id:"",
 					department_id:""
 				}];
-				this.roles = [];
+				this.roles = ['1','2'];
 				Object.keys(this.createReq).forEach(key=>{this.createReq[key]=""});
 			},
 			//修改
 			editor(id){
+				this.id = id;
 				this.showDialogType = 1;
-				this.showDialog = true;
+				resource.getAdminInfo({admin_id:this.id}).then(res => {
+					if(res.data.code == 1){
+						let resData = res.data.data;
+						this.showDialog = true;
+						this.createReq.staff_name = resData.name;
+						this.store_department = [];
+						resData.list.map(i => {
+							let pushObj = {
+								store_id:i.item.split("_")[0],
+								department_id:i.item.split("_")[1],
+							}
+							this.store_department.push(pushObj);
+						});
+						this.roles = resData.role.split(",");
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				});
+
+			},
+			//点击指定员工
+			clickSpecified(){
+				if(this.showDialogType == 0){	//创建管理员可修改员工
+					dd.ready(() => {
+						dd.biz.contact.choose({
+    						multiple: false, //是否多选：true多选 false单选； 默认true
+    						users: [], //默认选中的用户列表，员工userid；成功回调中应包含该信息
+    						corpId: "ding7828fff434921f5b", //企业id
+    						max: 1500, //人数限制，当multiple为true才生效，可选范围1-1500
+    						onSuccess: res => {
+    							this.createReq.staff_name = res[0].name;
+    							this.createReq.staff_id = res[0].emplId;
+    						},
+    						onFail : err => {}
+    					});
+					});
+				}else{
+					this.$message.warning("不能修改员工哦~");
+				}
+				
 			},
 			//启停用
 			setting(id,type){
@@ -220,19 +267,45 @@
 			//确认创建/修改
 			submit(){
 				//店铺和部门
-				if(this.store_department.length == 1 && (this.store_department[0].store_id == "" && this.store_department[0].department_id == "")){
+				if(this.createReq.staff_name == ""){
+					this.$message.warning("请选择员工");
+				}else if(this.store_department.length == 1 && (this.store_department[0].store_id == "" && this.store_department[0].department_id == "")){
 					this.$message.warning("请选取店铺和部门");
 				}else{
+					//店铺部门字符串组合
 					var arr = [];
 					this.store_department.map((item) => {
 						let str = `${item.store_id}_${item.department_id}`;
 						arr.push(str);
 					});
 					this.createReq.item = arr.join(',');
+					//权限
+					this.createReq.roles = this.roles.join(',');
+					if(this.showDialogType == 0){	//创建
+						resource.createAdmin(this.createReq).then(res => {
+							if(res.data.code == 1){
+								this.$message.success("管理员创建成功");
+								this.showDialog = false;
+								//获取列表
+								this.getList();
+							}else{
+								this.$message.warning(res.data.msg);
+							}
+						});
+					}else{							//修改
+						resource.editAdmin({...this.createReq,...{admin_id:this.id}}).then(res => {
+							if(res.data.code == 1){
+								this.$message.success("管理员修改成功");
+								this.showDialog = false;
+								//获取列表
+								this.getList();
+							}else{
+								this.$message.warning(res.data.msg);
+							}
+						});
+					}
 				};
-				//权限
-				this.createReq.roles = this.roles.join(',');
-				console.log(this.createReq);
+				
 
 
 			}

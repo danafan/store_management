@@ -19,7 +19,7 @@
 					<el-button type="primary" round @click="search">搜索</el-button>
 				</el-form-item>
 				<el-form-item>
-					<el-button type="primary" round @click="exportUp">导出</el-button>
+					<el-button type="primary" round @click="exportUp" v-if="showExport">导出</el-button>
 				</el-form-item>
 			</el-form>
 			<el-table :data="dataObj.data" size="small" border style="width: 100%" align="center" :header-cell-style="{'background':'#f4f4f4'}">
@@ -88,6 +88,11 @@
 			//店铺列表(查询条件)
 			storeList() {
 				return this.$store.state.storeList
+			},
+			//判断是否显示导出按钮
+			showExport() {
+				let str = this.$store.state.userInfo.roles;
+				return str.indexOf("1") != -1;
 			}
 		},
 		created(){
@@ -143,14 +148,14 @@
 			},
 			//预约下载
 			exportUp(){
-				// var arr = {};
-				// for(let a in this.req){
-				// 	if(a != 'page' && a != 'pagesize' && this.req[a] != ''){
-				// 		arr[a] = this.req[a];
-				// 	}
-				// }
-				// arr.index = 11;
-				// exportUp.exportUp(arr)
+				var exportStr = [];
+				for(let a in this.req){
+					if(a != 'page' && a != 'pagesize' && this.req[a] != ''){
+						var str = `${a}=${this.req[a]}`;
+						exportStr.push(str);
+					}
+				}
+				window.open(`${location.origin}/api/index/export?${exportStr.join('&')}`);
 			},
 		},
 		components:{

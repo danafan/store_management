@@ -4,7 +4,7 @@
 			<div class="line"></div>
 			<div class="text">{{title}}</div>
 		</div>
-		<div class="right" @click="callback" v-if="shouBut">
+		<div class="right" @click="callback" v-if="shouBut && showCreate">
 			<img src="../assets/create.png">
 			<div>创建</div>
 		</div>
@@ -60,6 +60,13 @@
 			shouBut:{
 				type:Boolean,
 				default:true
+			}
+		},
+		computed: {
+			//判断是否显示创建按钮
+			showCreate() {
+				let str = this.$store.state.userInfo.roles;
+				return str.indexOf("2") != -1;
 			}
 		},
 		methods:{
