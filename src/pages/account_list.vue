@@ -21,17 +21,28 @@
 						</el-option>
 					</el-select>
 				</el-form-item>
+				<el-form-item label="认证人姓名：">
+					<el-input style="width: 300px;" v-model="req.auth_username" placeholder="认证人姓名"></el-input>
+				</el-form-item>
 				<el-form-item label="认证人手机号：">
 					<el-input style="width: 300px;" v-model="req.auth_mobile" type="number" placeholder="认证人手机号"></el-input>
 				</el-form-item>
 				<el-form-item label="所属员工：">
-					<el-input style="width: 300px;" v-model="req.realname" placeholder="输入所属员工"></el-input>
+					<el-input style="width: 300px;" v-model="req.staff_name" placeholder="输入所属员工"></el-input>
 				</el-form-item>
 				<el-form-item label="完善程度：">
 					<el-select v-model="req.usage_state" placeholder="请选择" clearable>
 						<el-option label="已完善" value="1">
 						</el-option>
 						<el-option label="未完善" value="0">
+						</el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="账号状态：">
+					<el-select v-model="req.status" placeholder="请选择" clearable>
+						<el-option label="已启用" value="1">
+						</el-option>
+						<el-option label="已停用" value="0">
 						</el-option>
 					</el-select>
 				</el-form-item>
@@ -55,7 +66,7 @@
 				</el-table-column>
 				<el-table-column prop="auth_mobile" label="认证人手机号" align="center">
 				</el-table-column>
-				<el-table-column prop="realname" label="所属员工" align="center">
+				<el-table-column prop="staff_name" label="所属员工" align="center">
 				</el-table-column>
 				<el-table-column label="操作" align="center">
 					<template slot-scope="scope">
@@ -128,9 +139,11 @@
 					store_id:"",
 					account:"",
 					dept_id:"",
+					auth_username:"",
 					auth_mobile:"",
-					realname:"",
-					usage_state:""
+					staff_name:"",
+					usage_state:"",
+					status:""
 				},
 				dataObj:{},					//获取到的信息
 				showDialog:false,			//默认创建弹框不显示
@@ -182,7 +195,7 @@
     					let req = {
     						account_id:id,
     						user_id:res[0].emplId,
-    						realname:res[0].name
+    						staff_name:res[0].name
     					}
     					//指定
     					this.specified(req);	
@@ -356,7 +369,7 @@
 						exportStr.push(str);
 					}
 				}
-				window.open(`${location.origin}/api/account/export?${exportStr.join('&')}`);
+				window.location.href = `${location.origin}/api/account/export?${exportStr.join('&')}`;
 			},
 
 

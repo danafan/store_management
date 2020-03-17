@@ -184,8 +184,8 @@
 						this.store_department = [];
 						resData.list.map(i => {
 							let pushObj = {
-								store_id:i.item.split("_")[0],
-								department_id:i.item.split("_")[1],
+								store_id:parseInt(i.item.split("_")[0]),
+								department_id:parseInt(i.item.split("_")[1]),
 							}
 							this.store_department.push(pushObj);
 						});
@@ -264,6 +264,30 @@
 			deleteIs(index){
 				this.store_department.splice(index,1);
 			},
+			//判断是否有重复
+			isRepeat(){
+				var arr = this.store_department;
+				var hash = {};
+				for (var i in arr) {
+					if (hash[JSON.stringify(arr[i])]){
+						return true; 
+					}
+					hash[JSON.stringify(arr[i])] = true;
+				}
+				return false;
+			},
+			//判断是否完善店铺和部门
+			isPerfect(){
+				var ishaha = true;
+				this.store_department.map((item) => {
+					if(item.store_id =="" || item.department_id == ""){
+						this.$message.warning("请完善店铺和部门");
+						ishaha  = false;
+						return;
+					}
+				});
+				return ishaha;
+			},
 			//确认创建/修改
 			submit(){
 				//店铺和部门
@@ -271,12 +295,19 @@
 					this.$message.warning("请选择员工");
 				}else if(this.store_department.length == 1 && (this.store_department[0].store_id == "" && this.store_department[0].department_id == "")){
 					this.$message.warning("请选取店铺和部门");
+				}else if(this.isRepeat()){
+					this.$message.warning("请勿重复填写店铺和部门");
+				}else if(!this.isPerfect()){
+					this.$message.warning("请完善店铺和部门");
 				}else{
 					//店铺部门字符串组合
 					var arr = [];
 					this.store_department.map((item) => {
-						let str = `${item.store_id}_${item.department_id}`;
-						arr.push(str);
+						if(item.store_id !="" && item.department_id != ""){
+							let str = `${item.store_id}_${item.department_id}`;
+							arr.push(str);
+						}
+						
 					});
 					this.createReq.item = arr.join(',');
 					//权限

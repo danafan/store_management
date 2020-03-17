@@ -131,7 +131,7 @@
 						exportStr.push(str);
 					}
 				}
-				window.open(`${location.origin}/api/log/export?${exportStr.join('&')}`);
+				window.location.href = `${location.origin}/api/log/export?${exportStr.join('&')}`;
 			},
 		},
 		components:{

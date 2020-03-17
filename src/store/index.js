@@ -14,7 +14,10 @@ const store = new Vuex.Store({
     //默认选中导航
     activeIndex:"/store_list",
     //导航及权限
-    userInfo:{},
+    userInfo:{
+      roles:"",
+      admin_name:""
+    },
     menuList:[],
     //店铺列表
     storeList:[],
@@ -77,6 +80,9 @@ const store = new Vuex.Store({
        if(res.data.code == 1){
          context.commit('GET_MENU', res.data.data);
          router.push('/store_list');
+       }else if(res.data.code == 0){
+          Message.warning(res.data.msg);
+          router.replace('/prompt');
        }else{
          Message.warning(res.data.msg);
        }

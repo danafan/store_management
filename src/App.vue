@@ -18,6 +18,7 @@
       }
     },
     created(){
+      // this.$router.push("prompt");
       //获取用户信息
       dd.getUserInfo();
     },

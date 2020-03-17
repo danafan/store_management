@@ -8,8 +8,7 @@ const instance = axios.create({
 
 instance.interceptors.response.use(response => {
   switch (response.data.code) {
-    case 400:
-    sessionStorage.clear();
+    case 1000:
     router.replace("/prompt");
   }
   return response;
