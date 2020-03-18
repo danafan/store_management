@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<el-card>
-			<CardTitle title="店铺列表" @callback="showDialog = true"></CardTitle>
+			<CardTitle title="店铺列表" @callback="showDialog = true" :shouBut="admin_type == '1'"></CardTitle>
 			<el-form :inline="true" size="small" class="demo-form-inline">
 				<el-form-item label="店铺名称：">
 					<el-select v-model="req.id" placeholder="请选择" clearable>
@@ -93,6 +93,10 @@
 			showExport() {
 				let str = this.$store.state.userInfo.roles;
 				return str.indexOf("1") != -1;
+			},
+			//判断是否是超级管理员
+			admin_type() {
+				return this.$store.state.userInfo.admin_type;
 			}
 		},
 		created(){

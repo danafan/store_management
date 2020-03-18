@@ -199,7 +199,7 @@
 			//点击指定员工
 			clickSpecified(){
 				if(this.showDialogType == 0){	//创建管理员可修改员工
-					dd.ready(() => {
+					// dd.ready(() => {
 						dd.biz.contact.choose({
     						multiple: false, //是否多选：true多选 false单选； 默认true
     						users: [], //默认选中的用户列表，员工userid；成功回调中应包含该信息
@@ -211,7 +211,7 @@
     						},
     						onFail : err => {}
     					});
-					});
+					// });
 				}else{
 					this.$message.warning("不能修改员工哦~");
 				}

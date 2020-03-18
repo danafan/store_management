@@ -17,7 +17,7 @@
 				</el-form-item>
 				<el-form-item label="部门名称：">
 					<el-select v-model="req.dept_id" placeholder="请选择" clearable>
-						<el-option v-for="item in departmentList" :key="item.dept_id" :label="item.dept_name" :value="item.dept_id">
+						<el-option v-for="item in bumen" :key="item.dept_id" :label="item.dept_name" :value="item.dept_id">
 						</el-option>
 					</el-select>
 				</el-form-item>
@@ -93,7 +93,7 @@
 	<el-dialog :title="showDialogType == 0 ? '创建' : '修改'" width="40%" :visible.sync="showDialog">
 		<el-form size="small" label-width="150px">
 			<el-form-item label="店铺名称：">
-				<el-select v-model="createReq.store_id" style="width: 200px;" :disabled="showDialogType == 1" placeholder="请选择" clearable>
+				<el-select v-model="store_id" style="width: 200px;" :disabled="showDialogType == 1" placeholder="请选择" clearable>
 					<el-option v-for="item in storeList" :key="item.store_id" :label="item.store_name" :value="item.store_id">
 					</el-option>
 				</el-select>
@@ -148,8 +148,9 @@
 				dataObj:{},					//获取到的信息
 				showDialog:false,			//默认创建弹框不显示
 				showDialogType:0,			//0:创建；1：修改
+				store_id:"",				//创建或修改选中的store_id
+				departmentList:[],			//部门列表
 				createReq:{
-					store_id:"",
 					dept_id:"",
 					account:"",
 					auth_username:"",
@@ -163,9 +164,9 @@
 			storeList() {
 				return this.$store.state.storeList;
 			},
-			//部门列表列表(查询条件)
-			departmentList() {
-				return this.$store.state.departmentList;
+			//部门名称列表（查询条件）
+			bumen() {
+				return this.$store.state.departmentList
 			},
 			//判断是否显示导出按钮
 			showExport() {
@@ -178,6 +179,12 @@
 				return str.indexOf("2") != -1;
 			}
 		},
+		watch:{
+			store_id:function(n,o){
+				//根据选中的店铺获取对应的部门
+				this.getDepartmentList(n);
+			}
+		},
 		created(){
 			//获取列表
 			this.getList();
@@ -185,7 +192,7 @@
 		methods:{
 			//点击指定员工
 			clickSpecified(id){
-				dd.ready(() => {
+				// dd.ready(() => {
 					dd.biz.contact.choose({
     				multiple: false, //是否多选：true多选 false单选； 默认true
     				users: [], //默认选中的用户列表，员工userid；成功回调中应包含该信息
@@ -194,7 +201,7 @@
     				onSuccess: res => {
     					let req = {
     						account_id:id,
-    						user_id:res[0].emplId,
+    						staff_id:res[0].emplId,
     						staff_name:res[0].name
     					}
     					//指定
@@ -202,7 +209,7 @@
     				},
     				onFail : err => {}
     			});
-				});
+				// });
 			},
 			//指定
 			specified(req){
@@ -256,7 +263,18 @@
 						this.showDialogType = 1;
 						this.showDialog = true;
 						var resData = res.data.data.info;
+						this.store_id = resData.store_id;
 						Object.keys(this.createReq).forEach(key=>{this.createReq[key]=resData[key]});
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				});
+			},
+			//根据选中的店铺获取对应的部门
+			getDepartmentList(id){
+				resource.getDepartmentList({store_id:id}).then(res => {
+					if(res.data.code == 1){
+						this.departmentList = res.data.data;
 					}else{
 						this.$message.warning(res.data.msg);
 					}
@@ -264,7 +282,7 @@
 			},
 			//确认创建/修改
 			submit(){
-				if(this.createReq.store_id == ""){
+				if(this.store_id == ""){
 					this.$message.warning('请选择店铺');
 				}else if(this.createReq.dept_id == ""){
 					this.$message.warning('请选择部门');
@@ -310,7 +328,7 @@
 				};
 			},
 			createFuc(){
-				resource.createAccount(this.createReq).then(res => {
+				resource.createAccount({...this.createReq,...{store_id:this.store_id}}).then(res => {
 					if(res.data.code == 1){
 						this.$message.success('账号创建成功');
 						this.showDialog = false;
@@ -322,7 +340,7 @@
 				});
 			},
 			editFuc(){
-				resource.editAccount({...this.createReq,...{account_id:this.id}}).then(res => {
+				resource.editAccount({...this.createReq,...{account_id:this.id,store_id:this.store_id}}).then(res => {
 					if(res.data.code == 1){
 						this.$message.success('账号修改成功');
 						this.showDialog = false;

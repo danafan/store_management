@@ -16,7 +16,8 @@ const store = new Vuex.Store({
     //导航及权限
     userInfo:{
       roles:"",
-      admin_name:""
+      admin_name:"",
+      admin_type:""
     },
     menuList:[],
     //店铺列表
