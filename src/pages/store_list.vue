@@ -117,6 +117,7 @@
 							this.showDialog = false;
 							//获取列表
 							this.getList();
+							this.$store.dispatch('getStoreListAjax');
 						}else{
 							this.$message.warning(res.data.msg);
 						}

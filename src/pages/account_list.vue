@@ -27,14 +27,16 @@
 				<el-form-item label="认证人手机号：">
 					<el-input style="width: 300px;" v-model="req.auth_mobile" type="number" placeholder="认证人手机号"></el-input>
 				</el-form-item>
-				<el-form-item label="所属员工：">
+				<el-form-item label="使用人：">
 					<el-input style="width: 300px;" v-model="req.staff_name" placeholder="输入所属员工"></el-input>
 				</el-form-item>
-				<el-form-item label="完善程度：">
+				<el-form-item label="使用状态：">
 					<el-select v-model="req.usage_state" placeholder="请选择" clearable>
-						<el-option label="已完善" value="1">
+						<el-option label="不限" value="">
 						</el-option>
-						<el-option label="未完善" value="0">
+						<el-option label="已使用" value="1">
+						</el-option>
+						<el-option label="未使用" value="0">
 						</el-option>
 					</el-select>
 				</el-form-item>
@@ -66,7 +68,7 @@
 				</el-table-column>
 				<el-table-column prop="auth_mobile" label="认证人手机号" align="center">
 				</el-table-column>
-				<el-table-column prop="staff_name" label="所属员工" align="center">
+				<el-table-column prop="staff_name" label="使用人" align="center">
 				</el-table-column>
 				<el-table-column label="操作" align="center">
 					<template slot-scope="scope">
@@ -92,14 +94,14 @@
 	</el-card>
 	<el-dialog :title="showDialogType == 0 ? '创建' : '修改'" width="40%" :visible.sync="showDialog">
 		<el-form size="small" label-width="150px">
-			<el-form-item label="店铺名称：">
-				<el-select v-model="store_id" style="width: 200px;" :disabled="showDialogType == 1" placeholder="请选择" clearable>
-					<el-option v-for="item in storeList" :key="item.store_id" :label="item.store_name" :value="item.store_id">
+			<el-form-item label="店铺ID：">
+				<el-select v-model="store_id" style="width: 200px;" placeholder="请选择" clearable>
+					<el-option v-for="item in storeList" :key="store_id" :label="item.taobao_store_id" :value="item.store_id">
 					</el-option>
 				</el-select>
 			</el-form-item>
 			<el-form-item label="部门名称：">
-				<el-select v-model="createReq.dept_id" style="width: 200px;" :disabled="showDialogType == 1" placeholder="请选择" clearable>
+				<el-select v-model="createReq.dept_id" style="width: 200px;" placeholder="请选择" clearable>
 					<el-option v-for="item in departmentList" :key="item.dept_id" :label="item.dept_name" :value="item.dept_id">
 					</el-option>
 				</el-select>
@@ -192,8 +194,7 @@
 		methods:{
 			//点击指定员工
 			clickSpecified(id){
-				// dd.ready(() => {
-					dd.biz.contact.choose({
+				dd.biz.contact.choose({
     				multiple: false, //是否多选：true多选 false单选； 默认true
     				users: [], //默认选中的用户列表，员工userid；成功回调中应包含该信息
     				corpId: "ding7828fff434921f5b", //企业id
@@ -209,7 +210,6 @@
     				},
     				onFail : err => {}
     			});
-				// });
 			},
 			//指定
 			specified(req){
@@ -253,6 +253,7 @@
 			create(){
 				this.showDialogType = 0;
 				this.showDialog = true;
+				this.store_id = "";
 				Object.keys(this.createReq).forEach(key=>{this.createReq[key]=""});
 			},
 			//点击修改
@@ -263,7 +264,7 @@
 						this.showDialogType = 1;
 						this.showDialog = true;
 						var resData = res.data.data.info;
-						this.store_id = resData.store_id;
+						this.store_id = parseInt(resData.store_id);
 						Object.keys(this.createReq).forEach(key=>{this.createReq[key]=resData[key]});
 					}else{
 						this.$message.warning(res.data.msg);
@@ -274,6 +275,7 @@
 			getDepartmentList(id){
 				resource.getDepartmentList({store_id:id}).then(res => {
 					if(res.data.code == 1){
+						this.createReq.dept_id = "";
 						this.departmentList = res.data.data;
 					}else{
 						this.$message.warning(res.data.msg);

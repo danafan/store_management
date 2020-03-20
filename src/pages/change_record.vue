@@ -35,7 +35,7 @@
 				</el-table-column>
 				<el-table-column prop="auth_mobile" label="认证人手机号" align="center">
 				</el-table-column>
-				<el-table-column prop="staff_name" label="所属员工" align="center">
+				<el-table-column prop="staff_name" label="使用人" align="center">
 				</el-table-column>
 				<el-table-column prop="admin_name" label="操作管理员" align="center">
 				</el-table-column>

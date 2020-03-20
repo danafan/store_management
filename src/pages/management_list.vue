@@ -127,11 +127,22 @@
 		computed: {
 			//店铺列表(查询条件)
 			storeList() {
-				return this.$store.state.storeList;
+				let list = this.$store.state.storeList;
+				let obj =  {
+					store_id: 0,
+					store_name: "全部",
+					taobao_store_id: "101"
+				}
+				return [...[obj],...list];
 			},
 			//部门列表列表(查询条件)
 			departmentList() {
-				return this.$store.state.departmentList;
+				let list = this.$store.state.departmentList;
+				let obj =  {
+					dept_id: 0,
+					dept_name: "全部"
+				}
+				return [...[obj],...list];
 			},
 			//判断是否显示修改按钮
 			showEdit() {
@@ -245,7 +256,7 @@
 			},
 			//点击加
 			add(index){
-				if(this.store_department[index].store_id == "" || this.store_department[index].department_id == ""){
+				if(this.store_department[index].store_id === "" || this.store_department[index].department_id === ""){
 					this.$message.warning("请完善当前条目");
 				}else{
 					if(JSON.stringify(this.store_department.slice(0,this.store_department.length - 1)).indexOf(JSON.stringify(this.store_department[index])) === -1){
@@ -272,6 +283,9 @@
 					if (hash[JSON.stringify(arr[i])]){
 						return true; 
 					}
+					if(arr.length > 1 && (arr[i].store_id === 0 && arr[i].department_id === 0)){
+						return true; 
+					}
 					hash[JSON.stringify(arr[i])] = true;
 				}
 				return false;
@@ -280,7 +294,7 @@
 			isPerfect(){
 				var ishaha = true;
 				this.store_department.map((item) => {
-					if(item.store_id =="" || item.department_id == ""){
+					if(item.store_id === "" || item.department_id === ""){
 						this.$message.warning("请完善店铺和部门");
 						ishaha  = false;
 						return;
@@ -293,7 +307,7 @@
 				//店铺和部门
 				if(this.createReq.staff_name == ""){
 					this.$message.warning("请选择员工");
-				}else if(this.store_department.length == 1 && (this.store_department[0].store_id == "" && this.store_department[0].department_id == "")){
+				}else if(this.store_department.length == 1 && (this.store_department[0].store_id === "" && this.store_department[0].department_id === "")){
 					this.$message.warning("请选取店铺和部门");
 				}else if(this.isRepeat()){
 					this.$message.warning("请勿重复填写店铺和部门");
@@ -303,7 +317,7 @@
 					//店铺部门字符串组合
 					var arr = [];
 					this.store_department.map((item) => {
-						if(item.store_id !="" && item.department_id != ""){
+						if(item.store_id !== "" && item.department_id !== ""){
 							let str = `${item.store_id}_${item.department_id}`;
 							arr.push(str);
 						}
