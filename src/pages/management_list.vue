@@ -283,9 +283,6 @@
 					if (hash[JSON.stringify(arr[i])]){
 						return true; 
 					}
-					if(arr.length > 1 && (arr[i].store_id === 0 && arr[i].department_id === 0)){
-						return true; 
-					}
 					hash[JSON.stringify(arr[i])] = true;
 				}
 				return false;

@@ -9,6 +9,7 @@ let path = {
 	getDepartmentList:"index/ajaxdept",					//获取部门列表
 	getAccountList:"account/index",						//获取账号列表
 	specified:"account/appoint",						//指定员工
+	outerList:'account/ajaxouter',						//获取外部员工列表
 	createAccount:"account/add",						//创建账号
 	editAccount:"account/edit",							//修改账号（获取和修改）
 	startOrStop:"account/startstop",					//账号启停用
@@ -56,6 +57,10 @@ export default{
 	//指定员工
 	specified(params){
 		return http.post(path.specified, params)
+	},
+	//获取外部员工列表
+	outerList(params){
+		return http.get(path.outerList, params)
 	},
 	//创建账号
 	createAccount(params){

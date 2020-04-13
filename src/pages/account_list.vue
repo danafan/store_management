@@ -28,7 +28,7 @@
 					<el-input style="width: 300px;" v-model="req.auth_mobile" type="number" placeholder="认证人手机号"></el-input>
 				</el-form-item>
 				<el-form-item label="使用人：">
-					<el-input style="width: 300px;" v-model="req.staff_name" placeholder="输入所属员工"></el-input>
+					<el-input style="width: 300px;" v-model="req.staff_name" placeholder="输入使用人"></el-input>
 				</el-form-item>
 				<el-form-item label="使用状态：">
 					<el-select v-model="req.usage_state" placeholder="请选择" clearable>
@@ -70,10 +70,14 @@
 				</el-table-column>
 				<el-table-column prop="staff_name" label="使用人" align="center">
 				</el-table-column>
+				<el-table-column prop="remarks" label="备注" align="center">
+				</el-table-column>
 				<el-table-column label="操作" align="center">
 					<template slot-scope="scope">
 						<el-button type="text" size="small" @click="clickSpecified(scope.row.account_id)">指定员工</el-button>
+						<el-button type="text" size="small" @click="clickExternal(scope.row.account_id)">指定外部员工</el-button>
 						<el-button type="text" size="small" @click="editor(scope.row.account_id)" v-if="showEdit">修改</el-button>
+						<el-button type="text" size="small" @click="remark(scope.row.account_id,scope.row.remarks)" v-if="showRemark">备注</el-button>
 						<el-button type="text" size="small" v-if="scope.row.status == 1" @click="setting(scope.row.account_id,0)">停用</el-button>
 						<el-button type="text" size="small" v-if="scope.row.status == 0" @click="setting(scope.row.account_id,1)">启用</el-button>
 					</template>
@@ -92,6 +96,7 @@
 			</el-pagination>
 		</div>
 	</el-card>
+	<!-- 创建或修改 -->
 	<el-dialog :title="showDialogType == 0 ? '创建' : '修改'" width="40%" :visible.sync="showDialog">
 		<el-form size="small" label-width="150px">
 			<el-form-item label="店铺ID：">
@@ -121,6 +126,29 @@
 			<el-button size="small" @click="showDialog = false">取 消</el-button>
 		</span>
 	</el-dialog>
+	<!-- 指定外部员工 -->
+	<el-dialog title="选择外部员工作为店铺账号的使用人" width="40%" :visible.sync="showOuter">
+		<el-radio-group v-model="checkOuter">
+			<el-radio :label="item" v-for="item in outerList">{{item.outer_username}}</el-radio>
+		</el-radio-group>
+		<span slot="footer" class="dialog-footer">
+			<el-button size="small" type="primary" @click="okCheck">确 定</el-button>
+			<el-button size="small" @click="showOuter = false">取 消</el-button>
+		</span>
+	</el-dialog>
+	<!-- 备注 -->
+	<el-dialog title="备注" width="40%" :visible.sync="showRemarkDialog">
+		<el-input
+		type="textarea"
+		:rows="5"
+		placeholder="请输入备注"
+		v-model="remarkContent">
+	</el-input>
+	<span slot="footer" class="dialog-footer">
+		<el-button size="small" type="primary" @click="okRemark">确 定</el-button>
+		<el-button size="small" @click="showRemarkDialog = false">取 消</el-button>
+	</span>
+</el-dialog>
 </div>
 </template>
 <style type="text/css" lang="less" scoped>
@@ -152,6 +180,11 @@
 				showDialogType:0,			//0:创建；1：修改
 				store_id:"",				//创建或修改选中的store_id
 				departmentList:[],			//部门列表
+				showOuter:false,			//指定外部员工弹框
+				outerList:[],				//所有外部员工列表
+				checkOuter:{},				//选中的外部员工
+				showRemarkDialog:false,		//是否显示备注弹框
+				remarkContent:"",			//备注内容
 				createReq:{
 					dept_id:"",
 					account:"",
@@ -179,7 +212,13 @@
 			showEdit() {
 				let str = this.$store.state.userInfo.roles;
 				return str.indexOf("2") != -1;
+			},
+			//判断是否显示备注
+			showRemark(){
+				let str = this.$store.state.userInfo.roles;
+				return str.indexOf("2") != -1;
 			}
+
 		},
 		watch:{
 			store_id:function(n,o){
@@ -201,6 +240,7 @@
     				max: 1500, //人数限制，当multiple为true才生效，可选范围1-1500
     				onSuccess: res => {
     					let req = {
+    						type:0,
     						account_id:id,
     						staff_id:res[0].emplId,
     						staff_name:res[0].name
@@ -211,10 +251,38 @@
     				onFail : err => {}
     			});
 			},
+			//点击指定外部员工
+			clickExternal(id){
+				this.id = id;
+				resource.outerList().then(res => {
+					if(res.data.code == 1){
+						this.outerList = res.data.data;
+						this.showOuter = true;
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				});
+			},
+			//点击选择外部员工确认
+			okCheck(){
+				if(!this.checkOuter.outer_user_id){
+					this.$message.warning("请选择外部员工!");
+				}else{
+					let req = {
+						type:1,
+						account_id:this.id,
+						staff_id:this.checkOuter.outer_user_id,
+						staff_name:this.checkOuter.outer_username
+					}
+    				//指定
+    				this.specified(req);
+    			}
+    		},
 			//指定
 			specified(req){
 				resource.specified(req).then(res => {
 					if(res.data.code == 1){
+						this.showOuter = false;
 						this.$message.success("员工指定成功");
 						//获取列表
 						this.getList();
@@ -271,6 +339,20 @@
 					}
 				});
 			},
+			//点击备注
+			remark(id,remarks){
+				this.id = id;
+				this.showRemarkDialog = true;
+				this.remarkContent = remarks;
+			},
+			//确认备注
+			okRemark(){
+				let req = {
+					account_id:this.id,
+					remarks:this.remarkContent
+				}
+				this.editFuc(req);
+			},
 			//根据选中的店铺获取对应的部门
 			getDepartmentList(id){
 				resource.getDepartmentList({store_id:id}).then(res => {
@@ -302,7 +384,7 @@
 								if(this.showDialogType == 0){		//创建
 									this.createFuc();	
 								}else{								//修改
-									this.editFuc();
+									this.editFuc({...this.createReq,...{account_id:this.id,store_id:this.store_id}});
 								}
 							}else{
 								this.showDialog = false;
@@ -317,7 +399,7 @@
 									if(this.showDialogType == 0){		//创建
 										this.createFuc();	
 									}else{								//修改
-										this.editFuc();
+										this.editFuc({...this.createReq,...{account_id:this.id,store_id:this.store_id}});
 									}
 								}).catch(() => {
 									this.showDialog = true;          
@@ -341,11 +423,12 @@
 					}
 				});
 			},
-			editFuc(){
-				resource.editAccount({...this.createReq,...{account_id:this.id,store_id:this.store_id}}).then(res => {
+			editFuc(req){
+				resource.editAccount(req).then(res => {
 					if(res.data.code == 1){
 						this.$message.success('账号修改成功');
 						this.showDialog = false;
+						this.showRemarkDialog = false;
 						//获取列表
 						this.getList();
 					}else{
