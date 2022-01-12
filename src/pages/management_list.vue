@@ -12,6 +12,7 @@
 						<el-button type="text" size="small" @click="editor(scope.row.admin_id)" v-if="showEdit">修改</el-button>
 						<el-button type="text" size="small" v-if="scope.row.status == 1" @click="setting(scope.row.admin_id,0)">停用</el-button>
 						<el-button type="text" size="small" v-if="scope.row.status == 0" @click="setting(scope.row.admin_id,1)">启用</el-button>
+						<el-button type="text" size="small" v-if="scope.row.status == 0" @click="delAdmin(scope.row.admin_id)">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -210,8 +211,7 @@
 			//点击指定员工
 			clickSpecified(){
 				if(this.showDialogType == 0){	//创建管理员可修改员工
-					// dd.ready(() => {
-						dd.biz.contact.choose({
+					dd.biz.contact.choose({
     						multiple: false, //是否多选：true多选 false单选； 默认true
     						users: [], //默认选中的用户列表，员工userid；成功回调中应包含该信息
     						corpId: "ding7828fff434921f5b", //企业id
@@ -219,10 +219,8 @@
     						onSuccess: res => {
     							this.createReq.staff_name = res[0].name;
     							this.createReq.staff_id = res[0].emplId;
-    						},
-    						onFail : err => {}
+    						}
     					});
-					// });
 				}else{
 					this.$message.warning("不能修改员工哦~");
 				}
@@ -240,6 +238,30 @@
 						admin_id:id
 					};
 					resource.startOrStopAdmin(req).then(res => {
+						if(res.data.code == 1){
+							//获取列表
+							this.getList();
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
+				}).catch(() => {
+					this.$message({
+						type: 'info',
+						message: '取消'
+					});          
+				});
+			},
+			delAdmin(id){
+				this.$confirm('确认删除?', '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					type: 'warning'
+				}).then(() => {
+					var req = {
+						admin_id:id
+					};
+					resource.delAdmin(req).then(res => {
 						if(res.data.code == 1){
 							//获取列表
 							this.getList();
@@ -346,7 +368,7 @@
 							}
 						});
 					}
-				};
+				}
 				
 
 

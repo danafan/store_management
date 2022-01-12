@@ -6,6 +6,7 @@ let path = {
 	getStoreListAjax:"index/ajaxstore",					//获取店铺列表（查询条件）
 	createStore:"index/add",							//创建店铺
 	getStoreList:"index/storeList",						//获取店铺列表（结果列表）
+	delStore:'index/del',								//删除店铺
 	getDepartmentList:"index/ajaxdept",					//获取部门列表
 	getAccountList:"account/index",						//获取账号列表
 	specified:"account/appoint",						//指定员工
@@ -19,6 +20,8 @@ let path = {
 	startOrStopAdmin:"admin/startstop",					//管理员启停用
 	createAdmin:"admin/add",							//创建管理员
 	editAdmin:"admin/edit",								//编辑管理员
+	editName:'index/editname',							//编辑管理员姓名
+	delAdmin:'admin/del',								//删除管理员
 
 }				
 export default{
@@ -45,6 +48,10 @@ export default{
 	//获取店铺列表（结果列表）
 	getStoreList(params){
 		return http.get(path.getStoreList, params)
+	},
+	//删除店铺
+	delStore(params){
+		return http.post(path.delStore, params)
 	},
 	//获取部门列表
 	getDepartmentList(params){
@@ -105,6 +112,18 @@ export default{
 	//编辑管理员
 	editAdmin(params){
 		return http.post(path.editAdmin, params)
+	},
+	//编辑管理员姓名(get)
+	editNameGet(params){
+		return http.get(path.editName, params)
+	},
+	//编辑管理员姓名(post)
+	editNamePost(params){
+		return http.post(path.editName, params)
+	},
+	//删除管理员
+	delAdmin(params){
+		return http.post(path.delAdmin, params)
 	},
 	
 }

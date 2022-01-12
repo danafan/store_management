@@ -29,6 +29,32 @@
 				</el-table-column>
 				<el-table-column prop="num" label="账号数量" align="center">
 				</el-table-column>
+				<el-table-column width="160" prop="dept_name" label="项目部名称" align="center">
+				</el-table-column>
+				<el-table-column prop="store_belong" label="店铺归属" align="center">
+				</el-table-column>
+				<el-table-column prop="store_type" label="店铺类型" align="center">
+				</el-table-column>
+				<el-table-column width="160" prop="store_status" label="店铺经营状态" align="center">
+				</el-table-column>
+				<el-table-column width="160" prop="jst_id" label="聚水潭编号" align="center">
+				</el-table-column>
+				<el-table-column width="160" prop="virtual_no" label="虚拟机号段" align="center">
+				</el-table-column>
+				<el-table-column prop="store_subject" label="店铺主体" align="center">
+				</el-table-column>
+				<el-table-column width="160" prop="real_phone" label="实名手机号" align="center">
+				</el-table-column>
+				<el-table-column width="160" prop="phone_authenticator" label="号码认证人" align="center">
+				</el-table-column>
+				<el-table-column width="160" prop="phone_custodian" label="号码保管人" align="center">
+				</el-table-column>
+				<el-table-column label="操作" align="center" width="120" fixed="right">
+					<template slot-scope="scope">
+						<el-button type="text" size="small" @click="editStore(scope.row.store_id)">编辑</el-button>
+						<el-button type="text" size="small" @click="deleteStore(scope.row.store_id)">删除</el-button>
+					</template>
+				</el-table-column>
 			</el-table>
 			<div class="page">
 				<el-pagination
@@ -43,6 +69,7 @@
 			</el-pagination>
 		</div>
 	</el-card>
+	<!-- 创建店铺 -->
 	<el-dialog title="创建" width="40%" :visible.sync="showDialog">
 		<el-form size="small" label-width="150px">
 			<el-form-item label="店铺名称：">
@@ -55,6 +82,48 @@
 		<span slot="footer" class="dialog-footer">
 			<el-button size="small" type="primary" @click="submit">确 定</el-button>
 			<el-button size="small" @click="showDialog = false">取 消</el-button>
+		</span>
+	</el-dialog>
+	<!-- 修改店铺 -->
+	<el-dialog title="修改店铺" width="40%" :visible.sync="showEdit">
+		<el-form size="small" label-width="150px">
+			<el-form-item label="店铺名称：">
+				<el-input v-model="store_info.store_name" style='width: 200px;' placeholder="请输入店铺名称"></el-input>
+			</el-form-item>
+			<el-form-item label="项目部：">
+				<el-input v-model="store_info.dept_name" style='width: 200px;' placeholder="请输入项目部"></el-input>
+			</el-form-item>
+			<el-form-item label="店铺归属：">
+				<el-input v-model="store_info.store_belong" style='width: 200px;' placeholder="请输入店铺归属"></el-input>
+			</el-form-item>
+			<el-form-item label="店铺类型：">
+				<el-input v-model="store_info.store_type" style='width: 200px;' placeholder="请输入店铺类型"></el-input>
+			</el-form-item>
+			<el-form-item label="店铺经营状态：">
+				<el-input v-model="store_info.store_status" style='width: 200px;' placeholder="请输入店铺经营状态"></el-input>
+			</el-form-item>
+			<el-form-item label="聚水潭编号：">
+				<el-input v-model="store_info.jst_id" style='width: 200px;' placeholder="请输入聚水潭编号"></el-input>
+			</el-form-item>
+			<el-form-item label="虚拟机号段：">
+				<el-input v-model="store_info.virtual_no" style='width: 200px;' placeholder="请输入虚拟机号段"></el-input>
+			</el-form-item>
+			<el-form-item label="店铺主体：">
+				<el-input v-model="store_info.store_subject" style='width: 200px;' placeholder="请输入店铺主体"></el-input>
+			</el-form-item>
+			<el-form-item label="实名手机号：">
+				<el-input v-model="store_info.real_phone" style='width: 200px;' placeholder="请输入实名手机号"></el-input>
+			</el-form-item>
+			<el-form-item label="号码认证人：">
+				<el-input v-model="store_info.phone_authenticator" style='width: 200px;' placeholder="请输入号码认证人"></el-input>
+			</el-form-item>
+			<el-form-item label="号码保管人：">
+				<el-input v-model="store_info.phone_custodian" style='width: 200px;' placeholder="请输入号码保管人"></el-input>
+			</el-form-item>
+		</el-form>
+		<span slot="footer" class="dialog-footer">
+			<el-button size="small" type="primary" @click="submitEdit">确 定</el-button>
+			<el-button size="small" @click="showEdit = false">取 消</el-button>
 		</span>
 	</el-dialog>
 </div>
@@ -81,7 +150,9 @@
 				createReq:{
 					store_name:"",
 					taobao_store_id:""
-				}
+				},
+				showEdit:false,				//修改店铺名称弹框
+				store_info:{},				//店铺详情
 			}
 		},
 		computed: {
@@ -122,7 +193,57 @@
 							this.$message.warning(res.data.msg);
 						}
 					})
-				};
+				}
+			},
+			//点击修改
+			editStore(id){
+				resource.editNameGet({store_id:id}).then(res => {
+					if(res.data.code == 1){
+						this.store_info = res.data.data;
+						this.showEdit = true;
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				})
+			},
+			//确认修改
+			submitEdit(){
+				if(this.store_info.store_name == ""){
+					this.$message.warning("请输入店铺名称");
+				}else{
+					resource.editNamePost(this.store_info).then(res => {
+						if(res.data.code == 1){
+							this.$message.success(res.data.msg);
+							this.showEdit = false;
+							//获取列表
+							this.getList();
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
+				}
+			},
+			//删除店铺
+			deleteStore(store_id){
+				this.$confirm('确认删除该店铺', '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					type: 'warning'
+				}).then(() => {
+					resource.delStore({store_id:store_id}).then(res => {
+						if(res.data.code == 1){
+							//获取列表
+							this.getList();
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
+				}).catch(() => {
+					this.$message({
+						type: 'info',
+						message: '取消'
+					});          
+				});
 			},
 			//分页
 			handleSizeChange(val) {

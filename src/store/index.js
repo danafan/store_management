@@ -48,20 +48,20 @@ const store = new Vuex.Store({
     //获取钉钉用户信息
     getUserInfo({dispatch},data){
 
-          // sessionStorage.setItem("user_id","8318");
-          // // 获取导航及权限
-          // dispatch('getMenu');
-          // //获取店铺列表
-          // dispatch('getStoreListAjax');
-          // //获取部门列表
-          // dispatch('getDepartmentListAjax');
-          // //获取钉钉配置
-          // dispatch('ddConfig');
+      // sessionStorage.setItem("user_id","8318");
+      // // 获取导航及权限
+      // dispatch('getMenu');
+      // //获取店铺列表
+      // dispatch('getStoreListAjax');
+      // //获取部门列表
+      // dispatch('getDepartmentListAjax');
+      // //获取钉钉配置
+      // dispatch('ddConfig');
 
-          resource.getUserInfo({code:data.code}).then(res => {
-            if(res.data.code == 1){
-              let user_id = res.data.data.user_id;
-              sessionStorage.setItem("user_id",user_id);
+      resource.getUserInfo({code:data.code}).then(res => {
+        if(res.data.code == 1){
+          let user_id = res.data.data.user_id;
+          sessionStorage.setItem("user_id",user_id);
           // 获取导航及权限
           dispatch('getMenu');
           //获取店铺列表
@@ -71,10 +71,10 @@ const store = new Vuex.Store({
           //获取钉钉配置
           dispatch('ddConfig');
         }else{
-         Message.warning(res.data.msg);
-       }
-     });
-        },
+          Message.warning(res.data.msg);
+        }
+      });
+    },
     //获取钉钉配置
     ddConfig(context) {
       resource.ddConfig().then(res => {
@@ -85,21 +85,21 @@ const store = new Vuex.Store({
          Message.warning(res.data.msg);
        }
      })
-    },
+       },
     // 获取导航及权限
     getMenu (context) {
       resource.getMenu().then(res => {
        if(res.data.code == 1){
          context.commit('GET_MENU', res.data.data);
-         router.push('/store_list');
-       }else if(res.data.code == 0){
-        Message.warning(res.data.msg);
-        router.replace('/prompt');
-      }else{
-       Message.warning(res.data.msg);
-     }
-   })
-    },
+           router.push('/store_list');
+         }else if(res.data.code == 0){
+          Message.warning(res.data.msg);
+            router.replace('/prompt');
+          }else{
+           Message.warning(res.data.msg);
+         }
+       })
+         },
     //切换导航
     changeMenu(context,index){
       context.commit('CHANGE_MENU', index);
@@ -113,7 +113,7 @@ const store = new Vuex.Store({
          Message.warning(res.data.msg);
        }
      })
-    },
+       },
     //获取部门列表
     getDepartmentListAjax(context){
       resource.getDepartmentList().then(res => {
@@ -123,13 +123,13 @@ const store = new Vuex.Store({
          Message.warning(res.data.msg);
        }
      })
-    }
-    
+       }
 
 
 
-  }
 
-})
-export default store;
+     }
+
+   })
+         export default store;
 

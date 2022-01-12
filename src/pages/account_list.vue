@@ -48,6 +48,16 @@
 						</el-option>
 					</el-select>
 				</el-form-item>
+				<el-form-item label="异常状态：">
+					<el-select v-model="req.abnormal_status">
+						<el-option label="正常" value="0">
+						</el-option>
+						<el-option label="姓名异常" value="1">
+						</el-option>
+						<el-option label="手机号异常" value="2">
+						</el-option>
+					</el-select>
+				</el-form-item>
 				<el-form-item>
 					<el-button type="primary" round @click="search">搜索</el-button>
 				</el-form-item>
@@ -74,12 +84,12 @@
 				</el-table-column>
 				<el-table-column label="操作" align="center">
 					<template slot-scope="scope">
-						<el-button type="text" size="small" @click="clickSpecified(scope.row.account_id)">指定员工</el-button>
-						<el-button type="text" size="small" @click="clickExternal(scope.row.account_id)">指定外部员工</el-button>
-						<el-button type="text" size="small" @click="editor(scope.row.account_id)" v-if="showEdit">修改</el-button>
-						<el-button type="text" size="small" @click="remark(scope.row.account_id,scope.row.remarks)" v-if="showRemark">备注</el-button>
-						<el-button type="text" size="small" v-if="scope.row.status == 1" @click="setting(scope.row.account_id,0)">停用</el-button>
-						<el-button type="text" size="small" v-if="scope.row.status == 0" @click="setting(scope.row.account_id,1)">启用</el-button>
+						<el-button type="text" size="small" @click="clickSpecified(scope.row.account_id)" v-if="scope.row.role == 1">指定员工</el-button>
+						<el-button type="text" size="small" @click="clickExternal(scope.row.account_id)" v-if="scope.row.role == 1">指定外部员工</el-button>
+						<el-button type="text" size="small" @click="editor(scope.row.account_id)" v-if="showEdit && scope.row.role == 1">修改</el-button>
+						<el-button type="text" size="small" @click="remark(scope.row.account_id,scope.row.remarks)" v-if="showRemark && scope.row.role == 1">备注</el-button>
+						<el-button type="text" size="small" v-if="scope.row.status == 1 && scope.row.role == 1" @click="setting(scope.row.account_id,0)">停用</el-button>
+						<el-button type="text" size="small" v-if="scope.row.status == 0 && scope.row.role == 1" @click="setting(scope.row.account_id,1)">启用</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -101,7 +111,7 @@
 		<el-form size="small" label-width="150px">
 			<el-form-item label="店铺ID：">
 				<el-select v-model="store_id" style="width: 200px;" placeholder="请选择" clearable>
-					<el-option v-for="item in storeList" :key="store_id" :label="item.taobao_store_id" :value="item.store_id">
+					<el-option v-for="(item,index) in storeList" :key="index" :label="item.taobao_store_id" :value="item.store_id">
 					</el-option>
 				</el-select>
 			</el-form-item>
@@ -173,7 +183,8 @@
 					auth_mobile:"",
 					staff_name:"",
 					usage_state:"",
-					status:""
+					status:"",
+					abnormal_status:"0"
 				},
 				dataObj:{},					//获取到的信息
 				showDialog:false,			//默认创建弹框不显示
@@ -377,7 +388,7 @@
 				}else if(this.createReq.auth_mobile == ""){
 					this.$message.warning('请输入认证人手机号');
 				}else{
-					resource.authStore({name:this.createReq.auth_username}).then(res => {
+					resource.authStore({name:this.createReq.auth_username,store_id:this.store_id,account_id:this.id}).then(res => {
 						if(res.data.code == 1){
 							let reaData = res.data.data;
 							if(reaData.length == 0){
@@ -431,6 +442,24 @@
 						this.showRemarkDialog = false;
 						//获取列表
 						this.getList();
+					}else if(res.data.code == 2){
+						this.showDialog = false;
+						let reaData = res.data.data;
+						let arr = [];
+						reaData.map(item => arr.push(`【${item.store_name}】`));
+						this.$confirm(`该认证人已认证店铺${arr.join(",")}，是否用该认证人认证此账号?`, '提示', {
+							confirmButtonText: '确定',
+							cancelButtonText: '取消',
+							type: 'warning'
+						}).then(() => {
+							if(this.showDialogType == 0){		//创建
+								this.createFuc();	
+							}else{								//修改
+								this.editFuc({...this.createReq,...{account_id:this.id,store_id:this.store_id}});
+							}
+						}).catch(() => {
+							this.showDialog = true;          
+						});
 					}else{
 						this.$message.warning(res.data.msg);
 					}
