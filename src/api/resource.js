@@ -4,6 +4,7 @@ let path = {
 	ddConfig:"jsapi",									//获取钉钉配置信息
 	getMenu:"getmenu",									//获取导航菜单以及用户信息
 	getStoreListAjax:"index/ajaxstore",					//获取店铺列表（查询条件）
+	importStore:'index/importstore',					//导入店铺
 	createStore:"index/add",							//创建店铺
 	getStoreList:"index/storeList",						//获取店铺列表（结果列表）
 	delStore:'index/del',								//删除店铺
@@ -40,6 +41,10 @@ export default{
 	//获取店铺列表（查询条件）
 	getStoreListAjax(params){
 		return http.get(path.getStoreListAjax, params)
+	},
+	//导入店铺
+	importStore(params){
+		return http.post(path.importStore, params)
 	},
 	//创建店铺
 	createStore(params){

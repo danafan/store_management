@@ -21,11 +21,16 @@
 				<el-form-item>
 					<el-button type="primary" round @click="exportUp" v-if="showExport">导出</el-button>
 				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" round @click="show_dialog = true">导入</el-button>
+				</el-form-item>
 			</el-form>
 			<el-table :data="dataObj.data" size="small" border style="width: 100%" align="center" :header-cell-style="{'background':'#f4f4f4'}">
 				<el-table-column prop="store_name" label="店铺名称" align="center">
 				</el-table-column>
 				<el-table-column prop="taobao_store_id" label="店铺ID" align="center">
+				</el-table-column>
+				<el-table-column width="160" prop="store_admin" label="店铺负责人" align="center">
 				</el-table-column>
 				<el-table-column prop="num" label="账号数量" align="center">
 				</el-table-column>
@@ -120,16 +125,51 @@
 			<el-form-item label="号码保管人：">
 				<el-input v-model="store_info.phone_custodian" style='width: 200px;' placeholder="请输入号码保管人"></el-input>
 			</el-form-item>
+			<el-form-item label="店铺负责人：">
+				<el-input v-model="store_info.store_admin" style='width: 200px;' placeholder="店铺负责人"></el-input>
+			</el-form-item>
 		</el-form>
 		<span slot="footer" class="dialog-footer">
 			<el-button size="small" type="primary" @click="submitEdit">确 定</el-button>
 			<el-button size="small" @click="showEdit = false">取 消</el-button>
 		</span>
 	</el-dialog>
+	<!-- 导入 -->
+		<el-dialog title="导入" :visible.sync="show_dialog" width="30%">
+			<div class="down_box">
+				<el-button type="primary" plain size="small" @click="downTemplate">下载模版<i class="el-icon-download el-icon--right"></i></el-button>
+				<div class="upload_box">
+					<el-button type="primary" size="small">
+						导入
+						<i class="el-icon-upload el-icon--right"></i>
+					</el-button>
+					<input type="file" ref="csvUpload" class="upload_file" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="uploadCsv">
+				</div>
+			</div>
+			<div slot="footer" class="dialog-footer">
+				<el-button size="small" @click="show_dialog = false">取 消</el-button>
+			</div>
+		</el-dialog>
 </div>
 </template>
-<style type="text/css" lang="less" scoped>
-
+<style lang="less" scoped>
+.down_box{
+	display:flex;
+	.upload_box{
+		margin-left: 10px;
+		position: relative;
+		.upload_file{
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			width: 100%;
+			height: 100%;
+			opacity: 0;
+		}
+	}
+}
 </style>
 
 <script type="text/javascript">
@@ -153,6 +193,7 @@
 				},
 				showEdit:false,				//修改店铺名称弹框
 				store_info:{},				//店铺详情
+				show_dialog:false
 			}
 		},
 		computed: {
@@ -175,6 +216,27 @@
 			this.getList();
 		},
 		methods:{
+			//下载模版
+			downTemplate(){
+				window.open('https://img.gxk8090.com/%E5%BA%97%E9%93%BA%E4%BF%A1%E6%81%AF%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.xlsx')
+			},
+			//导入
+			uploadCsv(){
+				if (this.$refs.csvUpload.files.length > 0) {
+					let files = this.$refs.csvUpload.files;
+					resource.importStore({file:files[0]}).then(res => {
+						this.$refs.csvUpload.value = null;
+						if(res.data.code == 1){
+							this.$message.success(res.data.msg);
+							this.page = 1;
+							//获取列表
+							this.getList();
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
+				}
+			},
 			//确认创建
 			submit(){
 				if(this.createReq.store_name == ""){

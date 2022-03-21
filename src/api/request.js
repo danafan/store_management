@@ -2,7 +2,6 @@ import axios from './index'
 
 export default {
   post(path, params={}){
-    // var target = {};
     
     let user_id = sessionStorage.getItem("user_id");
     var target = {
@@ -29,7 +28,6 @@ export default {
     return axios.post(`${path}`, form);
   },
   get(path, params={}){
-    // var target = {};
     
     let user_id = sessionStorage.getItem("user_id");
     var target = {
