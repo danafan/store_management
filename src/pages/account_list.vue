@@ -64,6 +64,9 @@
 				<el-form-item>
 					<el-button type="primary" round @click="exportUp" v-if="showExport">导出</el-button>
 				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" round @click="show_dialog = true">导入</el-button>
+				</el-form-item>
 			</el-form>
 			<el-table :data="dataObj.data" size="small" border style="width: 100%" align="center" :header-cell-style="{'background':'#f4f4f4'}">
 				<el-table-column prop="store_name" label="店铺名称" align="center">
@@ -159,10 +162,42 @@
 		<el-button size="small" @click="showRemarkDialog = false">取 消</el-button>
 	</span>
 </el-dialog>
+<!-- 导入 -->
+		<el-dialog title="导入" :visible.sync="show_dialog" width="30%">
+			<div class="down_box">
+				<el-button type="primary" plain size="small" @click="downTemplate">下载模版<i class="el-icon-download el-icon--right"></i></el-button>
+				<div class="upload_box">
+					<el-button type="primary" size="small">
+						导入
+						<i class="el-icon-upload el-icon--right"></i>
+					</el-button>
+					<input type="file" ref="csvUpload" class="upload_file" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="uploadCsv">
+				</div>
+			</div>
+			<div slot="footer" class="dialog-footer">
+				<el-button size="small" @click="show_dialog = false">取 消</el-button>
+			</div>
+		</el-dialog>
 </div>
 </template>
 <style type="text/css" lang="less" scoped>
-
+.down_box{
+	display:flex;
+	.upload_box{
+		margin-left: 10px;
+		position: relative;
+		.upload_file{
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			width: 100%;
+			height: 100%;
+			opacity: 0;
+		}
+	}
+}
 </style>
 
 <script type="text/javascript">
@@ -203,6 +238,7 @@
 					auth_mobile:""
 				},
 				id:"",						//选中的账号id
+				show_dialog:false,
 			}
 		},
 		computed: {
@@ -491,6 +527,28 @@
 						this.$message.warning(res.data.msg);
 					}
 				})
+			},
+			//下载模版
+			downTemplate(){
+				window.open('https://img.gxk8090.com/%E5%BA%97%E9%93%BA%E8%B4%A6%E5%8F%B7%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.xlsx')
+			},
+			//导入
+			uploadCsv(){
+				if (this.$refs.csvUpload.files.length > 0) {
+					let files = this.$refs.csvUpload.files;
+					resource.accountImport({file:files[0]}).then(res => {
+						this.$refs.csvUpload.value = null;
+						if(res.data.code == 1){
+							this.$message.success(res.data.msg);
+							this.req.page = 1;
+							this.show_dialog = false;
+							//获取列表
+							this.getList();
+						}else{
+							this.$message.warning(res.data.msg);
+						}
+					})
+				}
 			},
 			//预约下载
 			exportUp(){

@@ -23,6 +23,7 @@ let path = {
 	editAdmin:"admin/edit",								//编辑管理员
 	editName:'index/editname',							//编辑管理员姓名
 	delAdmin:'admin/del',								//删除管理员
+	accountImport:'account/import',						//店铺账号导入接口
 
 }				
 export default{
@@ -129,6 +130,10 @@ export default{
 	//删除管理员
 	delAdmin(params){
 		return http.post(path.delAdmin, params)
+	},
+	//店铺账号导入接口
+	accountImport(params){
+		return http.post(path.accountImport, params)
 	},
 	
 }
