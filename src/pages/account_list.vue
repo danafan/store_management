@@ -113,7 +113,7 @@
 	<el-dialog :title="showDialogType == 0 ? '创建' : '修改'" width="40%" :visible.sync="showDialog">
 		<el-form size="small" label-width="150px">
 			<el-form-item label="店铺ID：">
-				<el-select v-model="store_id" style="width: 200px;" placeholder="请选择" clearable>
+				<el-select v-model="store_id" style="width: 200px;" placeholder="请选择" clearable @change="checkStore">
 					<el-option v-for="(item,index) in storeList" :key="index" :label="item.taobao_store_id" :value="item.store_id">
 					</el-option>
 				</el-select>
@@ -163,21 +163,21 @@
 	</span>
 </el-dialog>
 <!-- 导入 -->
-		<el-dialog title="导入" :visible.sync="show_dialog" width="30%">
-			<div class="down_box">
-				<el-button type="primary" plain size="small" @click="downTemplate">下载模版<i class="el-icon-download el-icon--right"></i></el-button>
-				<div class="upload_box">
-					<el-button type="primary" size="small">
-						导入
-						<i class="el-icon-upload el-icon--right"></i>
-					</el-button>
-					<input type="file" ref="csvUpload" class="upload_file" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="uploadCsv">
-				</div>
-			</div>
-			<div slot="footer" class="dialog-footer">
-				<el-button size="small" @click="show_dialog = false">取 消</el-button>
-			</div>
-		</el-dialog>
+<el-dialog title="导入" :visible.sync="show_dialog" width="30%">
+	<div class="down_box">
+		<el-button type="primary" plain size="small" @click="downTemplate">下载模版<i class="el-icon-download el-icon--right"></i></el-button>
+		<div class="upload_box">
+			<el-button type="primary" size="small">
+				导入
+				<i class="el-icon-upload el-icon--right"></i>
+			</el-button>
+			<input type="file" ref="csvUpload" class="upload_file" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="uploadCsv">
+		</div>
+	</div>
+	<div slot="footer" class="dialog-footer">
+		<el-button size="small" @click="show_dialog = false">取 消</el-button>
+	</div>
+</el-dialog>
 </div>
 </template>
 <style type="text/css" lang="less" scoped>
@@ -278,6 +278,9 @@
 			this.getList();
 		},
 		methods:{
+			checkStore(){
+				this.createReq.dept_id = "";
+			},
 			//点击指定员工
 			clickSpecified(id){
 				dd.biz.contact.choose({
@@ -404,7 +407,6 @@
 			getDepartmentList(id){
 				resource.getDepartmentList({store_id:id}).then(res => {
 					if(res.data.code == 1){
-						this.createReq.dept_id = "";
 						this.departmentList = res.data.data;
 					}else{
 						this.$message.warning(res.data.msg);
