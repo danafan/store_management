@@ -85,9 +85,17 @@
 				</el-table-column>
 				<el-table-column prop="remarks" label="备注" align="center">
 				</el-table-column>
+				<el-table-column prop="remarks" label="审核状态" align="center">
+					<template slot-scope="scope">
+						<div v-if="scope.row.audit_status == '0'">待审核</div>
+						<div v-if="scope.row.audit_status == '1'">审核通过</div>
+						<div v-if="scope.row.audit_status == '2'">审核拒绝</div>
+					</template>
+				</el-table-column>
 				<el-table-column label="操作" align="center">
 					<template slot-scope="scope">
 						<el-button type="text" size="small" @click="clickSpecified(scope.row.account_id)" v-if="scope.row.role == 1">指定员工</el-button>
+						<el-button type="text" size="small" @click="auditFn(scope.row.account_id)" v-if="scope.row.audit_status == '0'">审核</el-button>
 						<el-button type="text" size="small" @click="clickExternal(scope.row.account_id)" v-if="scope.row.role == 1">指定外部员工</el-button>
 						<el-button type="text" size="small" @click="editor(scope.row.account_id)" v-if="showEdit && scope.row.role == 1">修改</el-button>
 						<el-button type="text" size="small" @click="remark(scope.row.account_id,scope.row.remarks)" v-if="showRemark && scope.row.role == 1">备注</el-button>
@@ -178,6 +186,17 @@
 		<el-button size="small" @click="show_dialog = false">取 消</el-button>
 	</div>
 </el-dialog>
+<!-- 审核 -->
+<el-dialog title="审核" width="30%" :visible.sync="showAudit">
+	<el-radio-group v-model="type">
+		<el-radio label="1">同意</el-radio>
+		<el-radio label="2">拒绝</el-radio>
+	</el-radio-group>
+	<span slot="footer" class="dialog-footer">
+		<el-button size="small" type="primary" @click="checkAudit">确 定</el-button>
+		<el-button size="small" @click="showAudit = false">取 消</el-button>
+	</span>
+</el-dialog>
 </div>
 </template>
 <style type="text/css" lang="less" scoped>
@@ -239,6 +258,8 @@
 				},
 				id:"",						//选中的账号id
 				show_dialog:false,
+				showAudit:false,			//审核弹窗
+				type:'1',					//1:同意；2:拒绝
 			}
 		},
 		computed: {
@@ -280,6 +301,29 @@
 		methods:{
 			checkStore(){
 				this.createReq.dept_id = "";
+			},
+			//点击审核
+			auditFn(account_id){
+				this.type = '1';
+				this.id = account_id;
+				this.showAudit = true;
+			},
+			//提交审核
+			checkAudit(){
+				let arg = {
+					account_id:this.id,
+					type:this.type
+				}
+				resource.accountAudit(arg).then(res => {
+					if(res.data.code == 1){
+						this.$message.success(res.data.msg);
+						this.showAudit = false;
+						//获取列表
+						this.getList();
+					}else{
+						this.$message.warning(res.data.msg);
+					}
+				})
 			},
 			//点击指定员工
 			clickSpecified(id){

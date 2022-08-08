@@ -24,6 +24,7 @@ let path = {
 	editName:'index/editname',							//编辑管理员姓名
 	delAdmin:'admin/del',								//删除管理员
 	accountImport:'account/import',						//店铺账号导入接口
+	accountAudit:'account/audit',						//审核账号
 
 }				
 export default{
@@ -134,6 +135,10 @@ export default{
 	//店铺账号导入接口
 	accountImport(params){
 		return http.post(path.accountImport, params)
+	},
+	//审核账号
+	accountAudit(params){
+		return http.post(path.accountAudit, params)
 	},
 	
 }
