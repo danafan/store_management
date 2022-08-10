@@ -22,10 +22,10 @@
       }
     },
     created(){
-      store.dispatch('getUserInfo',{code:"res.code"});
+      // store.dispatch('getUserInfo',{code:"res.code"});
 
       //获取用户信息
-      // dd.getUserInfo();
+      dd.getUserInfo();
     },
     methods: {
       reload () {

@@ -58,6 +58,18 @@
 						</el-option>
 					</el-select>
 				</el-form-item>
+				<el-form-item label="审核状态：">
+					<el-select v-model="req.audit_status">
+						<el-option label="全部" value="">
+						</el-option>
+						<el-option label="待审核" value="0">
+						</el-option>
+						<el-option label="审核通过" value="1">
+						</el-option>
+						<el-option label="审核拒绝" value="2">
+						</el-option>
+					</el-select>
+				</el-form-item>
 				<el-form-item>
 					<el-button type="primary" round @click="search">搜索</el-button>
 				</el-form-item>
@@ -238,7 +250,8 @@
 					staff_name:"",
 					usage_state:"",
 					status:"",
-					abnormal_status:"0"
+					abnormal_status:"0",
+					audit_status:""
 				},
 				dataObj:{},					//获取到的信息
 				showDialog:false,			//默认创建弹框不显示
